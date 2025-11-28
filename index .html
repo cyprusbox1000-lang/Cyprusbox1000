@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cyprus Swap — Ανταλλαγές & Αγγελίες</title>
+<style>
+:root{--accent:#0b74de;--bg:#f7f9fc}
+body{font-family:Arial, Helvetica, sans-serif;margin:0;background:var(--bg);color:#111}
+header{background:var(--accent);color:white;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.container{max-width:980px;margin:18px auto;padding:0 16px}
+.lang{background:#fff;color:var(--accent);border-radius:6px;padding:6px 10px;border:none;cursor:pointer}
+.card{background:#fff;padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(2,6,23,.06);margin-bottom:12px}
+input,textarea,select{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #e4e7eb}
+button.primary{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.muted{color:#666;font-size:13px}
+.top-row{display:flex;gap:8px;align-items:center}
+.tag{display:inline-block;padding:4px 8px;border-radius:16px;background:#eef6ff;color:var(--accent);font-weight:600;margin-top:4px}
+.img{width:100%;height:160px;object-fit:cover;border-radius:8px;background:#f1f5f9}
+.footer{padding:14px;text-align:center;color:#666;font-size:14px;margin-top:24px}
+.ad-space{background:#eef6ff;padding:8px;text-align:center;border-radius:8px;margin:12px 0;color:#0b74de;font-weight:600}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+</head>
+<body>
+<header>
+<div style="font-weight:700">Cyprus Swap</div>
+<div class="top-row">
+<button id="lang-btn" class="lang">EN</button>
+</div>
+</header>
+
+<main class="container">
+
+<!-- Έτοιμος χώρος για διαφημίσεις / κέρδη -->
+<div class="ad-space">
+<!-- Google AdSense / Affiliate Links -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+     data-ad-slot="XXXXXXXXXX"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div>
+
+<section class="card">
+<h2 id="title-main">Ανάρτηση Αγγελίας</h2>
+<p id="desc-main" class="muted">Εύκολο και γρήγορο — συμπλήρωσε τα στοιχεία και δημοσίευσε.</p>
+<div style="display:grid;gap:8px">
+<label id="lbl-title">Τίτλος</label>
+<input id="input-title" placeholder="π.χ. Ελαστικά αυτοκινήτου 205/55R16 (καλά)"/>
+<label id="lbl-desc">Περιγραφή</label>
+<textarea id="input-desc" rows="3" placeholder="Περιγραφή, κατάσταση, τοποθεσία, τηλέφωνο/Whatsapp"></textarea>
+<label id="lbl-cond">Κατάσταση</label>
+<select id="input-cond">
+<option value="used">Μεταχειρισμένο</option>
+<option value="new">Νέο</option>
+</select>
+<label id="lbl-price">Τιμή (€) — προαιρετικό</label>
+<input id="input-price" placeholder="π.χ. 50 ή Αποκλειστικά ανταλλαγή"/>
+<label id="lbl-img">URL εικόνας — προαιρετικό</label>
+<input id="input-img" placeholder="https://..."/>
+<label id="lbl-contact">Επικοινωνία (τηλ/email/whatsapp)</label>
+<input id="input-contact" placeholder="π.χ. +357 99 123456"/>
+<div style="display:flex;gap:8px;justify-content:flex-end">
+<button id="btn-post" class="primary">Δημοσίευση</button>
+</div>
+<div id="post-msg" class="muted"></div>
+</div>
+</section>
+
+<section style="margin-top:14px">
+<h3 id="listings-title">Τελευταίες Αγγελίες</h3>
+<div id="listings" class="grid"></div>
+</section>
+</main>
+
+<div class="footer">Cyprus Swap — Δωρεάν πλατφόρμα δοκιμής. Για παραγωγή θα προσθέσουμε admin & πολιτικές.</div>
+
+<script>
+const SUPABASE_URL = 'https://hxazykxesecpxatcgvej.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4YXp5a3hlc2VjcGV4YXRjZ3ZlalEiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc2NDMyOTc2MSwiZXhwIjoyMDc5OTA1NzYxfQ.Dpfi7bFH1-5O_qyoqc2ixImYBTEuoy7bhmEIbrEEn6I';
+const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let lang='el';
+const strings={
+el:{titleMain:'Ανάρτηση Αγγελίας',descMain:'Εύκολο και γρήγορο — συμπλήρωσε τα στοιχεία και δημοσίευσε.',lblTitle:'Τίτλος',lblDesc:'Περιγραφή',lblCond:'Κατάσταση',lblPrice:'Τιμή (€) — προαιρετικό',lblImg:'URL εικόνας — προαιρετικό',lblContact:'Επικοινωνία (τηλ/email/whatsapp)',btnPost:'Δημοσίευση',listingsTitle:'Τελευταίες Αγγελίες',posted:'Η αγγελία δημοσιεύτηκε.',err:'Σφάλμα αποστολής. Προσπάθησε ξανά.',empty:'Κανένα αποτέλεσμα.'},
+en:{titleMain:'Post Listing',descMain:'Quick & easy — fill details and publish.',lblTitle:'Title',lblDesc:'Description',lblCond:'Condition',lblPrice:'Price (€) — optional',lblImg:'Image URL — optional',lblContact:'Contact (phone/email/whatsapp)',btnPost:'Publish',listingsTitle:'Latest Listings',posted:'Listing posted.',err:'Error. Try again.',empty:'No results.'}
+};
+
+const applyLang=()=>{document.getElementById('title-main').innerText=strings[lang].titleMain;
+document.getElementById('desc-main').innerText=strings[lang].descMain;
+document.getElementById('lbl-title').innerText=strings[lang].lblTitle;
+document.getElementById('lbl-desc').innerText=strings[lang].lblDesc;
+document.getElementById('lbl-cond').innerText=strings[lang].lblCond;
+document.getElementById('lbl-price').innerText=strings[lang].lblPrice;
+document.getElementById('lbl-img').innerText=strings[lang].lblImg;
+document.getElementById('lbl-contact').innerText=strings[lang].lblContact;
+document.getElementById('btn-post').innerText=strings[lang].btnPost;
+document.getElementById('listings-title').innerText=strings[lang].listingsTitle;
+document.getElementById('lang-btn').innerText=lang==='el'?'EN':'EL';};
+
+document.getElementById('lang-btn').addEventListener('click',()=>{lang=lang==='el'?'en':'el';applyLang();});
+applyLang();
+
+function escapeHtml(s){if(!s)return'';return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');}
+
+async function loadListings(){
+try{
+const {data,error}=await supabase.from('listings').select().order('created_at',{ascending:false}).limit(100);
+if(error){console.error(error);return;}
+const cont=document.getElementById('listings');cont.innerHTML='';
+if(!data||data.length===0){cont.innerHTML='<div class="muted card">'+strings[lang].empty+'</div>';return;}
+data.forEach(item=>{
+const el=document.createElement('div');el.className='card';
+const imgSrc=item.image_url||'https://via.placeholder.com/400x160?text=Χωρίς+εικόνα';
+const premiumTag=item.premium?'<span class="tag">Premium</span>':'';
+el.innerHTML=`<img src="${imgSrc}" onerror="this.src='https://via.placeholder.com/400x160?text=Χωρίς+εικόνα'" class="img"/>
+<h4>${escapeHtml(item.title)}</h4>
+<div class="muted">${escapeHtml(item.condition)} ${item.price?' • €'+item.price:''}</div>
+<p>${escapeHtml(item.description||'')}</p>
+<div class="muted">Επικοινωνία: ${escapeHtml(item.contact||'')}</div>
+${premiumTag}
+<div style="margin-top:8px"><span class="tag">${new Date(item.created_at).toLocaleString()}</span></div>`;
+cont.appendChild(el);
+});
+}catch(e){console.error(e);}
+}
+
+document.getElementById('btn-post').addEventListener('click', async()=>{
+const title=document.getElementById('input-title').value.trim();
+const description=document.getElementById('input-desc').value.trim();
+const condition=document.getElementById('input-cond').value;
+const price=document.getElementById('input-price').value.trim();
+const image_url=document.getElementById('input-img').value.trim();
+const contact=document.getElementById('input-contact').value.trim();
+const msg=document.getElementById('post-msg');
+if(!title||!contact){msg.innerText=lang==='el'?'Συμπλήρωσε τίτλο και επαφή.':'Please provide title and contact.';return;}
+msg.innerText='';
+try{
+const toInsert={title,description,condition,price:price||null,image_url:image_url||null,contact,created_at:new Date().toISOString(),premium:false};
+const {data,error}=await supabase.from('listings').insert([toInsert]);
+if(error){console.error(error);msg.innerText=strings[lang].err;return;}
+msg.innerText=strings[lang].posted;
+['input-title','input-desc','input-price','input-img','input-contact'].forEach(id=>document.getElementById(id).value='');
+loadListings();
+}catch(e){console.error(e);msg.innerText=strings[lang].err;}
+});
+
+loadListings();
+setInterval(loadListings,30000);
+</script>
+</body>
+</html>
